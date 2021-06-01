@@ -1,7 +1,7 @@
 syntax = "proto3";
-package protoparts;
+package ppproto;
 
-option go_package = "github.com/obeattie/protoparts";
+option go_package = "github.com/obeattie/protoparts/test/proto;ppproto";
 
 message LatLng {
      double latitude = 1;

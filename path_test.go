@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protowire"
+
+	ppproto "github.com/obeattie/protoparts/test/proto"
 )
 
 func TestDecodePath(t *testing.T) {
@@ -31,7 +33,7 @@ func TestDecodePath(t *testing.T) {
 }
 
 func TestDecodeSymbolicPath(t *testing.T) {
-	md := (&Person{}).ProtoReflect().Descriptor()
+	md := (&ppproto.Person{}).ProtoReflect().Descriptor()
 	type tc struct {
 		string
 		Path

@@ -1,3 +1,2 @@
-proto_pb_test.go: proto_test.proto
-	protoc --go_out=. --go_opt=paths=source_relative proto_test.proto
-	mv proto_test.pb.go proto_pb_test.go
+test/proto/proto.pb.go: test/proto/proto.proto
+	protoc --go_out=. --go_opt=paths=source_relative test/proto/proto.proto
