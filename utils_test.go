@@ -28,7 +28,7 @@ func TestValueFromMessage(t *testing.T) {
 		{`address/city`, protoreflect.ValueOfString(""), false},
 		{`map_string_string`, protoreflect.ValueOfMap(emptyMap), false},
 		{`tags`, protoreflect.ValueOfList(emptyList), false},
-		// This one is a bit weird – I naïvely expected this to be an empty string, as it would be if it was an unset
+		// This one is a bit weird – I naïvely expected this to be an empty string, as it would be if it was an unset
 		// string value. But the Protobuf libraries seem to return a nil value for an absent map key.
 		{`map_string_string[0x0a]`, protoreflect.Value{}, false},
 		// Invalid paths = nil value, not present

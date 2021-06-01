@@ -280,7 +280,7 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 }
 
 // Split explodes a serialised Protocol Buffer into parts of its constituent fields and those within nested
-// messages. The resulting parts are returned in the order they appear in pb – so recombining the parts (unless they
+// messages. The resulting parts are returned in the order they appear in, so recombining the parts (unless they
 // are reordered either manually or by sorting them) yields a byte-wise identical message.
 func Split(pb []byte, md protoreflect.MessageDescriptor) (Parts, error) {
 	return splitPb(pb, md, md, nil)

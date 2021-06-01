@@ -225,7 +225,7 @@ func DecodeSymbolicPath(s string, md protoreflect.MessageDescriptor) Path {
 //
 // The format of this string is suitable for long-term storage and is suitable for equality comparisons.
 func (p Path) String() string {
-	// WARNING: The output of this string must be kept stable and backwards-compatible – as the comment above explains
+	// WARNING: The output of this string must be kept stable and backwards-compatible: as the comment above explains
 	// it is used for storage in the database and can be compared for equality without translation back into a Path.
 	// Change it very carefully.
 	terms := make([]string, len(p))
@@ -261,7 +261,7 @@ func (p Path) SymbolicString(md protoreflect.MessageDescriptor) (string, error) 
 }
 
 // IsValid returns whether this path is valid for the passed message descriptor. This does not necessarily mean that
-// lookups are guaranteed to work – this can check the fields used are valid, but if there are list indices it cannot
+// lookups are guaranteed to work; this can check the fields used are valid, but if there are list indices it cannot
 // know what its cardinality will be.
 func (p Path) IsValid(md protoreflect.MessageDescriptor) bool {
 	for _, term := range p {
