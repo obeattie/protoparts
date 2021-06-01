@@ -130,7 +130,7 @@ func benchmarkMsg(t testing.TB) *dynamicpb.Message {
 			"wizard": "yes"})
 }
 
-// split is a shortcut which splits the dynamic message into parts
+// split is a shortcut which splits the dynamic message into Parts
 func split(t testing.TB, msg protoreflect.Message) Parts {
 	pb, err := proto.Marshal(msg.Interface())
 	require.NoError(t, err)
