@@ -32,7 +32,7 @@ func TestSplitJoinProto(t *testing.T) {
 
 	// Now, test that if the parts are shuffled, they are still reassembled in a way that yields an equivalent message
 	// Note: this does not mean the output is byte-wise identical to the input as we assert above – we can't expect
-	// that property to hold since proto.Marshal can reorder things arbitrarily – simply that they can be unmarshaled
+	// that property to hold since proto.Marshal can reorder things arbitrarily – simply that they can be unmarshalled
 	// successfully are considered equal by proto.Equal.
 	for i := 0; i < 100; i++ {
 		ps := split(t, person)

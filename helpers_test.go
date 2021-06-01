@@ -62,33 +62,42 @@ func testMsg(t testing.TB, name, streetAddress, city *string, tags []string, boo
 }
 
 func quickTestMsg(t testing.TB) *dynamicpb.Message {
-	personMd := (&Person{}).ProtoReflect().Descriptor()
-	addressMd := personMd.Fields().ByName("address").Message()
-	latLngMd := addressMd.Fields().ByName("lat_lng").Message()
+	person := testMsg(t,
+		s("Ryan Gosling"),
+		s("3532 Hayden Ave"),
+		s("Culver City"),
+		[]string{
+			"The Driver",
+			"Sebastian Wilder",
+			"", // deliberately diabolical
+		},
+		[][]byte{
+			[]byte("🕺"),
+			[]byte("🏍"),
+		},
+		map[string]string{
+			"k1": "v1",
+			"k2": "v2",
+			"k3": "v3",
+			"k4": "v4",
+			"":   "", // deliberately diabolical
+		})
+	personMd := person.Type().Descriptor()
 
-	person := dynamicpb.NewMessage(personMd)
-	person.Set(personMd.Fields().ByName("name"), protoreflect.ValueOf("Ryan Gosling"))
-	address := dynamicpb.NewMessage(addressMd)
-	address.Set(addressMd.Fields().ByName("street_address"), protoreflect.ValueOf("3532 Hayden Ave"))
-	address.Set(addressMd.Fields().ByName("city"), protoreflect.ValueOf("Culver City"))
+	address := person.Get(personMd.Fields().ByName("address")).Message()
+	addressMd := address.Type().Descriptor()
+	latLngMd := addressMd.Fields().ByName("lat_lng").Message()
 	latLng := dynamicpb.NewMessage(latLngMd)
 	latLng.Set(latLngMd.Fields().ByName("latitude"), protoreflect.ValueOfFloat64(34.0257178))
 	latLng.Set(latLngMd.Fields().ByName("longitude"), protoreflect.ValueOfFloat64(-118.3802275))
 	address.Set(addressMd.Fields().ByName("lat_lng"), protoreflect.ValueOf(latLng))
 	person.Set(personMd.Fields().ByName("address"), protoreflect.ValueOf(address))
+
 	moarAddresses := person.NewField(personMd.Fields().ByName("moar_addresses")).List()
 	moarAddresses.Append(protoreflect.ValueOf(address))
 	moarAddresses.Append(protoreflect.ValueOf(address))
 	person.Set(personMd.Fields().ByName("moar_addresses"), protoreflect.ValueOf(moarAddresses))
-	tags := person.NewField(personMd.Fields().ByName("tags")).List()
-	tags.Append(protoreflect.ValueOf("The Driver"))
-	tags.Append(protoreflect.ValueOf("Sebastian Wilder"))
-	tags.Append(protoreflect.ValueOf("")) // deliberately diabolical
-	person.Set(personMd.Fields().ByName("tags"), protoreflect.ValueOf(tags))
-	boop := person.NewField(personMd.Fields().ByName("boop")).List()
-	boop.Append(protoreflect.ValueOf([]byte("🕺")))
-	boop.Append(protoreflect.ValueOf([]byte("🏍")))
-	person.Set(personMd.Fields().ByName("boop"), protoreflect.ValueOf(boop))
+
 	single := personMd.Fields().ByName("marital_status").Enum().Values().ByName("SINGLE")
 	person.Set(personMd.Fields().ByName("marital_status"), protoreflect.ValueOf(single.Number()))
 	person.Set(personMd.Fields().ByName("maybe_latlng"), protoreflect.ValueOf(latLng))
@@ -104,13 +113,6 @@ func quickTestMsg(t testing.TB) *dynamicpb.Message {
 	emptyLatLng := dynamicpb.NewMessage(latLngMd)
 	mapStringLatLng.Set(protoreflect.ValueOf("empty").MapKey(), protoreflect.ValueOf(emptyLatLng))
 	person.Set(personMd.Fields().ByName("map_string_latlng"), protoreflect.ValueOf(mapStringLatLng))
-
-	mapStringString := person.NewField(personMd.Fields().ByName("map_string_string")).Map()
-	mapStringString.Set(protoreflect.ValueOf("k1").MapKey(), protoreflect.ValueOf("v1"))
-	mapStringString.Set(protoreflect.ValueOf("k2").MapKey(), protoreflect.ValueOf("v2"))
-	mapStringString.Set(protoreflect.ValueOf("k3").MapKey(), protoreflect.ValueOf("v3"))
-	mapStringString.Set(protoreflect.ValueOf("").MapKey(), protoreflect.ValueOf("")) // deliberately diabolical
-	person.Set(personMd.Fields().ByName("map_string_string"), protoreflect.ValueOf(mapStringString))
 
 	return person
 }
