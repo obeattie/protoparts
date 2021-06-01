@@ -3,6 +3,7 @@ module github.com/obeattie/protoparts
 go 1.15
 
 require (
+	github.com/dvyukov/go-fuzz v0.0.0-20210429054444-fca39067bc72 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.4.0
