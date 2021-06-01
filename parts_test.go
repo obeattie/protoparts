@@ -1,6 +1,7 @@
 package protoparts
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestMergeProtoParts(t *testing.T) {
 			testMsg(t, s("Lindy Bishop"), nil, nil, nil, nil, nil),
 			testMsg(t, s("Lindy Bishop"), nil, nil, nil, nil, nil)},
 		{
-			// Top-level field zeroing, with a field that supports explicit presence
+			// Top-level field zeroing, with a field that has explicit presence
 			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
 			testMsg(t, s(""), nil, nil, nil, nil, nil),
 			testMsg(t, s(""), nil, nil, nil, nil, nil)},
@@ -75,21 +76,23 @@ func TestMergeProtoParts(t *testing.T) {
 	}
 
 	for i, c := range tc {
-		before, mutation, expected := c[0], c[1], c[2]
-		beforeParts, mutationParts := split(t, before), split(t, mutation)
-		expectedB := marshalProto(t, expected)
-		afterParts := MergeProtoParts(beforeParts, mutationParts)
-		after := afterParts.ProtoMessage()
-		require.NotNil(t, after)
-		afterB := marshalProto(t, after.Interface())
-		if !assert.Equal(t, expectedB, afterB, "%d", i) {
-			t.Logf("          == %d detail", i)
-			t.Logf("  Before: %v", beforeParts)
-			mutationB := marshalProto(t, mutation)
-			t.Logf("Mutation: %v", mutationParts)
-			t.Logf(" (bytes): %x", mutationB)
-			t.Logf("   (msg): %v", mutation)
-			t.Logf("   After: %v", afterParts)
-		}
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			before, mutation, expected := c[0], c[1], c[2]
+			beforeParts, mutationParts := split(t, before), split(t, mutation)
+			expectedB := marshalProto(t, expected)
+			afterParts := MergeProtoParts(beforeParts, mutationParts)
+			after := afterParts.ProtoMessage()
+			require.NotNil(t, after)
+			afterB := marshalProto(t, after.Interface())
+			if !assert.Equal(t, expectedB, afterB) {
+				t.Logf("          == %d detail", i)
+				t.Logf("  Before: %v", beforeParts)
+				mutationB := marshalProto(t, mutation)
+				t.Logf("Mutation: %v", mutationParts)
+				t.Logf(" (bytes): %x", mutationB)
+				t.Logf("   (msg): %v", mutation)
+				t.Logf("   After: %v", afterParts)
+			}
+		})
 	}
 }
