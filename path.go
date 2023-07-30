@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -246,11 +245,11 @@ func (p Path) SymbolicString(md protoreflect.MessageDescriptor) (string, error) 
 	terms := make([]string, len(p))
 	for i, term := range p {
 		if md == nil {
-			return "", errors.New("path not found in message descriptor")
+			return "", fmt.Errorf("path not found in message descriptor")
 		}
 		fd := md.Fields().ByNumber(term.Tag)
 		if fd == nil {
-			return "", errors.Errorf("path %s not valid in descriptor %s", p, md.FullName())
+			return "", fmt.Errorf("path %s not valid in descriptor %s", p, md.FullName())
 		}
 		terms[i] = term.SymbolicString(fd)
 		md = fd.Message()

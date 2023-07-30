@@ -1,9 +1,9 @@
 package protoparts
 
 import (
+	"fmt"
 	"sort"
 
-	"github.com/pkg/errors"
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -209,11 +209,11 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 	for len(pb) > 0 {
 		num, typ, typLength := protowire.ConsumeTag(pb)
 		if typLength < 0 {
-			return nil, errors.Wrap(protowire.ParseError(typLength), "error parsing tag")
+			return nil, fmt.Errorf("error parsing tag: %w", protowire.ParseError(typLength))
 		}
 		valueLength := protowire.ConsumeFieldValue(num, typ, pb[typLength:])
 		if valueLength < 0 {
-			return nil, errors.Wrap(protowire.ParseError(typLength), "error parsing field value")
+			return nil, fmt.Errorf("error parsing field value: %w", protowire.ParseError(typLength))
 		}
 		value := pb[:typLength+valueLength]
 		pb = pb[len(value):]
