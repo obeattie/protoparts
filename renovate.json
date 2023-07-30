@@ -1,0 +1,17 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        ":automergeMinor",
+        ":automergeDigest"
+    ],
+    "timezone": "Europe/Paris",
+    "labels": [
+        "renovate"
+    ],
+    "assignees": [
+        "obeattie"
+    ],
+    "prHourlyLimit": 0,
+    "prConcurrentLimit": 0
+}
