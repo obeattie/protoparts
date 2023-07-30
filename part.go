@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// A Part represents a field as serialised within a Protocol Buffer message.
+// A Part represents a field within a binary Protocol Buffer message.
 type Part struct {
 	Path  Path
 	Bytes []byte
