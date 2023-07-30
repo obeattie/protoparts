@@ -10,7 +10,46 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/dynamicpb"
+
+	ppproto "github.com/obeattie/protoparts/test/proto"
 )
+
+func TestSplitProto(t *testing.T) {
+	md := (&ppproto.Person{}).ProtoReflect().Descriptor()
+	type tc struct {
+		msg           *dynamicpb.Message
+		expectedPaths []Path
+	}
+	cases := []tc{
+		{
+			// Empty message
+			testMsg(t, nil, nil, nil, nil, nil, nil),
+			[]Path{},
+		},
+		{
+			// Simple, one field populated
+			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
+			[]Path{
+				DecodeSymbolicPath("name", md)},
+		},
+		{
+			// An optional field with empty contents is still present
+			testMsg(t, s(""), nil, nil, nil, nil, nil),
+			[]Path{
+				DecodeSymbolicPath("name", md)},
+		},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			parts := split(t, c.msg)
+			var seenPaths []Path
+			for _, part := range parts {
+				seenPaths = append(seenPaths, part.Path)
+			}
+			assert.ElementsMatch(t, c.expectedPaths, seenPaths)
+		})
+	}
+}
 
 func TestMergeProtoParts(t *testing.T) {
 	tc := [][3]*dynamicpb.Message{
@@ -101,44 +140,51 @@ func TestMergeProtoParts(t *testing.T) {
 }
 
 func TestSplitJoinProto(t *testing.T) {
-	person := quickTestMsg(t)
-	personMd := person.Type().Descriptor()
-
-	// A round-trip through Join(Split(pb)) should always produce identical output to its input, preserving field order
-	// etc. Because proto.Marshal is not deterministic and may (in fact does) reorder fields, cycle through a round-trip
-	// 1000x to check this property holds.
-	for i := 0; i < 1000; i++ {
-		pb, err := proto.Marshal(person)
-		require.NoError(t, err)
-		parts, err := Split(pb, personMd)
-		require.NoError(t, err)
-		// if i == 0 {
-		// 	t.Logf("%x", pb)
-		// 	t.Log(parts)
-		// }
-		pb2 := parts.Join()
-		require.Equal(t, pb, pb2)
+	cases := []proto.Message{
+		quickTestMsg(t).Interface(),
 	}
 
-	// Now, test that if the parts are shuffled, they are still reassembled in a way that yields an equivalent message
-	// Note: this does not mean the output is byte-wise identical to the input as we assert above – we can't expect
-	// that property to hold since proto.Marshal can reorder things arbitrarily – simply that they can be unmarshalled
-	// successfully are considered equal by proto.Equal.
-	for i := 0; i < 100; i++ {
-		ps := split(t, person)
-		rand.Shuffle(len(ps), func(i, j int) {
-			ps[i], ps[j] = ps[j], ps[i]
+	for i, msg := range cases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			md := msg.ProtoReflect().Type().Descriptor()
+			// A round-trip through Join(Split(pb)) should always produce identical output to its input, preserving field order
+			// etc. Because proto.Marshal is not deterministic and may (in fact does) reorder fields, cycle through a round-trip
+			// 1000x to check this property holds.
+			for i := 0; i < 1000; i++ {
+				pb, err := proto.Marshal(msg)
+				require.NoError(t, err)
+				parts, err := Split(pb, md)
+				require.NoError(t, err)
+				// if i == 0 {
+				// 	t.Logf("%x", pb)
+				// 	t.Log(parts)
+				// }
+				pb2 := parts.Join()
+				require.Equal(t, pb, pb2)
+			}
+
+			// Now, test that if the parts are shuffled, they are still reassembled in a way that yields an equivalent message
+			// Note: this does not mean the output is byte-wise identical to the input as we assert above – we can't expect
+			// that property to hold since proto.Marshal can reorder things arbitrarily – simply that they can be unmarshalled
+			// successfully are considered equal by proto.Equal.
+			for i := 0; i < 100; i++ {
+				ps := split(t, msg.ProtoReflect())
+				rand.Shuffle(len(ps), func(i, j int) {
+					ps[i], ps[j] = ps[j], ps[i]
+				})
+				// if i == 0 {
+				// 	t.Logf("unsorted: %v", ps)
+				// }
+				sort.Sort(ps) // Since we shuffled, this is crucial to get a well-formed result
+				// if i == 0 {
+				// 	t.Logf("  sorted: %v", ps)
+				// }
+				pb2 := ps.Join()
+				msg2 := dynamicpb.NewMessage(md)
+				require.NoError(t, proto.Unmarshal(pb2, msg2))
+				require.True(t, proto.Equal(msg, msg2))
+			}
 		})
-		// if i == 0 {
-		// 	t.Logf("unsorted: %v", ps)
-		// }
-		sort.Sort(ps) // Since we shuffled, this is crucial to get a well-formed result
-		// if i == 0 {
-		// 	t.Logf("  sorted: %v", ps)
-		// }
-		pb2 := ps.Join()
-		person2 := dynamicpb.NewMessage(person.Descriptor())
-		require.NoError(t, proto.Unmarshal(pb2, person2))
-		require.True(t, proto.Equal(person, person2))
 	}
+
 }

@@ -293,7 +293,7 @@ func (p Path) Equal(q Path) bool {
 	return true
 }
 
-// HasPrefix returns whether this Path is a descendant of the prefix.
+// HasPrefix returns whether this Path is a descendant of the prefix. True if the prefix is equal to the Path.
 func (p Path) HasPrefix(prefix Path) bool {
 	if len(p) < len(prefix) || prefix == nil {
 		return false

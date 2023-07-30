@@ -162,10 +162,12 @@ func (ps Parts) join(prefixLen int) []byte {
 	for len(parts) > 0 {
 		part := parts[0]
 		bb := part.Bytes
+
+		// Extract all descendants of the prefix to serialise together
 		prefix, run := part.Path[:prefixLen+1], parts
-		for ii, candidate := range run { // extract all descendants of the prefix to serialise together
-			if !candidate.Path.HasPrefix(prefix) {
-				run = parts[:ii]
+		for ii, candidate := range run[1:] {
+			if len(candidate.Path) <= len(prefix) || !candidate.Path.HasPrefix(prefix) {
+				run = run[:ii+1] // +1 because the [1:] above means the range indices are off by one
 				break
 			}
 		}
@@ -189,7 +191,6 @@ func (ps Parts) join(prefixLen int) []byte {
 
 		b.Write(bb)
 		parts = parts[len(run):]
-		continue // skip over all the now-marshaled descendants
 	}
 
 	// We need to copy the bytes of the buffer; otherwise they can/will get reused
@@ -204,7 +205,7 @@ func (ps Parts) Less(x, y int) bool { return ps[x].Path.Compare(ps[y].Path) == -
 
 func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Path) (Parts, error) {
 	v := Parts{}
-	repeatedIndices := map[protowire.Number]int{} // incremented each time a repeated field is seen
+	indices := map[protowire.Number]int{} // Tracks the last seen index in repeated fields
 	for len(pb) > 0 {
 		num, typ, typLength := protowire.ConsumeTag(pb)
 		if typLength < 0 {
@@ -217,11 +218,17 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 		value := pb[:typLength+valueLength]
 		pb = pb[len(value):]
 
+		// Ignore unknown fields
+		fd := md.Fields().ByNumber(num)
+		if fd == nil {
+			continue
+		}
+
 		// Compile the path for the value
-		idx, fd := -1, md.Fields().ByNumber(num)
+		idx := -1
 		if fd.Cardinality() == protoreflect.Repeated && !fd.IsMap() {
-			idx = repeatedIndices[num]
-			repeatedIndices[num]++
+			idx = indices[num]
+			indices[num]++
 		}
 		path := append(prefix, PathTerm{
 			Tag:   num,
@@ -240,11 +247,11 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 				if err != nil {
 					return nil, err
 				}
-				if fd.IsMap() {
+				if len(children) > 0 && fd.IsMap() {
 					// Special treatment is needed for maps. Its key/value pairs are encoded as repeated nested
-					// messages, each with two fields for the key and value. But, to allow manipulation and addressing
-					// of values by their keys, we want the value to represented as a 'top level' Part, with the
-					// key forming part of the path.
+					// messages, each with two fields (key and value). But, to allow manipulation and addressing of
+					// values by their keys, we want the value to represented as a 'top level' Part, with the key
+					// forming part of the path.
 					//
 					// Thus, we need to manipulate the values' paths: at this point they look like  ….parent.2.…, but
 					// they need to be changed to ….parent[key].…

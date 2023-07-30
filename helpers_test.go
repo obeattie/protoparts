@@ -134,9 +134,9 @@ func benchmarkMsg(t testing.TB) *dynamicpb.Message {
 
 // split is a shortcut which splits the dynamic message into Parts
 func split(t testing.TB, msg protoreflect.Message) Parts {
-	pb, err := proto.Marshal(msg.Interface())
-	require.NoError(t, err)
+	pb := marshalProto(t, msg.Interface())
 	parts, err := Split(pb, msg.Descriptor())
 	require.NoError(t, err)
+	t.Logf("split %v", parts)
 	return parts
 }
