@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/dynamicpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	ppproto "github.com/obeattie/protoparts/test/proto"
 )
@@ -139,9 +140,19 @@ func TestMergeProtoParts(t *testing.T) {
 	}
 }
 
+// TestSplitJoinProto verifies that a serialised Protocol Buffer can be split, optionally shuffled + sorted, and
+// then re-joined, yielding an equalivalent object to the original when parsed.
 func TestSplitJoinProto(t *testing.T) {
 	cases := []proto.Message{
 		quickTestMsg(t).Interface(),
+		&ppproto.Article{
+			Title:   "Pigeon Appointed New Air Traffic Controller",
+			Content: "Dressed in a tiny reflective vest and perched confidently on a control tower window ledge, the pigeon, affectionately named \"Captain Coocoo,\" took over the reins of air traffic management during a quirky experiment gone slightly awry.",
+			Author:  "Wingston Featherweather",
+			Date:    timestamppb.Now(),
+			Status:  ppproto.Article_PUBLISHED,
+			Tags:    []string{"#PigeonTrafficControl", "#CooCooAviationAdventure", "#FeatheredFlightControl", "#WingingItInAirTraffic", "#PigeonBossInCharge", "#AvianMayhemAtTheTower", "#CoocooATC", "#FeatherlandiaChaos", "#AviationGonePigeon", "#BirdsOnTheRunway"},
+		},
 	}
 
 	for i, msg := range cases {
@@ -155,10 +166,6 @@ func TestSplitJoinProto(t *testing.T) {
 				require.NoError(t, err)
 				parts, err := Split(pb, md)
 				require.NoError(t, err)
-				// if i == 0 {
-				// 	t.Logf("%x", pb)
-				// 	t.Log(parts)
-				// }
 				pb2 := parts.Join()
 				require.Equal(t, pb, pb2)
 			}

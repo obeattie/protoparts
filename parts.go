@@ -248,7 +248,7 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 					return nil, err
 				}
 				if len(children) > 0 && fd.IsMap() {
-					// Special treatment is needed for maps. Its key/value pairs are encoded as repeated nested
+					// Special treatment is needed for maps. Their key/value pairs are encoded as repeated nested
 					// messages, each with two fields (key and value). But, to allow manipulation and addressing of
 					// values by their keys, we want the value to represented as a 'top level' Part, with the key
 					// forming part of the path.
