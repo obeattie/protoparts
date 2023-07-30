@@ -1,0 +1,19 @@
+2021/07/05 17:59:12 [3[0]/3=1a00 3[0]/3/1=0830]
+panic: runtime error: slice bounds out of range [:3] with capacity 2
+
+goroutine 1 [running]:
+github.com/obeattie/protoparts.Parts.join(0xc000070b80, 0x2, 0x2, 0x2, 0x0, 0x0, 0x0)
+	/Users/obeattie/src/github.com/obeattie/protoparts/parts.go:167 +0xa68
+github.com/obeattie/protoparts.Parts.join(0xc000070b80, 0x2, 0x2, 0x1, 0x0, 0x0, 0x0)
+	/Users/obeattie/src/github.com/obeattie/protoparts/parts.go:175 +0x7a5
+github.com/obeattie/protoparts.Parts.join(0xc000070b80, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0)
+	/Users/obeattie/src/github.com/obeattie/protoparts/parts.go:175 +0x7a5
+github.com/obeattie/protoparts.Parts.Join(...)
+	/Users/obeattie/src/github.com/obeattie/protoparts/parts.go:146
+github.com/obeattie/protoparts/test.Fuzz(0x29010000, 0xc, 0xc, 0x4)
+	/Users/obeattie/src/github.com/obeattie/protoparts/test/fuzz.go:28 +0x297
+go-fuzz-dep.Main(0xc0000d9f70, 0x1, 0x1)
+	go-fuzz-dep/main.go:36 +0x1b8
+main.main()
+	github.com/obeattie/protoparts/test/go.fuzz.main/main.go:15 +0x52
+exit status 2
