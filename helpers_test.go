@@ -137,6 +137,5 @@ func split(t testing.TB, msg protoreflect.Message) Parts {
 	pb := marshalProto(t, msg.Interface())
 	parts, err := Split(pb, msg.Descriptor())
 	require.NoError(t, err)
-	t.Logf("split %v", parts)
 	return parts
 }
