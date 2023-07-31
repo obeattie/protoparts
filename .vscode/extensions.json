@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "EditorConfig.EditorConfig",
+        "eamodio.gitlens",
+        "ms-vscode.makefile-tools"
+    ]
+}
