@@ -6,6 +6,14 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
+func mapSlice[T, U any](in []T, f func(T) U) []U {
+	out := make([]U, len(in))
+	for i, v := range in {
+		out[i] = f(v)
+	}
+	return out
+}
+
 // fieldDescriptorInMessage returns the field descriptor for the field at the given path, or nil if the path is invalid.
 func fieldDescriptorInMessage(md protoreflect.MessageDescriptor, p Path) protoreflect.FieldDescriptor {
 	if len(p) == 0 {

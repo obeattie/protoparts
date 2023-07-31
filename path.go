@@ -227,10 +227,7 @@ func (p Path) String() string {
 	// WARNING: The output of this string must be kept stable and backwards-compatible: as the comment above explains
 	// it is used for storage in the database and can be compared for equality without translation back into a Path.
 	// Change it very carefully.
-	terms := make([]string, len(p))
-	for i, term := range p {
-		terms[i] = term.String()
-	}
+	terms := mapSlice(p, func(term PathTerm) string { return term.String() })
 	return strings.Join(terms, `/`)
 }
 

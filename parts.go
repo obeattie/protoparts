@@ -44,6 +44,13 @@ func MergeProtoParts(p1, p2 Parts) Parts {
 	return v
 }
 
+// Paths returns all the contained field Paths
+func (ps Parts) Paths() []Path {
+	return mapSlice(ps, func(p Part) Path {
+		return p.Path
+	})
+}
+
 // Value returns the Protocol Buffer for the given Path, or nil if it could not be found which is possible if:
 //
 // - the path is invalid within the Protocol Buffer

@@ -193,5 +193,28 @@ func TestSplitJoinProto(t *testing.T) {
 			}
 		})
 	}
+}
 
+// TestProjection verifies that we can pull individual Parts out of the Protocol Buffer and unmarshal them without
+// issue.
+func TestProjection(t *testing.T) {
+	msg := quickTestMsg(t)
+	md := msg.ProtoReflect().Type().Descriptor()
+	parts := split(t, msg)
+
+	// Pull all the pieces out individually
+	for _, p := range parts {
+		fieldMsg := dynamicpb.NewMessage(md)
+		require.NoError(t, proto.Unmarshal(parts.Value(p.Path), fieldMsg), p.Path.String())
+	}
+
+	// Now, pull random combinations of the pieces out (by shuffling then taking a random number of parts from the
+	// head) and check that any combination
+	for i := 0; i < 5000; i++ {
+		rand.Shuffle(len(parts), func(i, j int) { parts[i], parts[j] = parts[j], parts[i] })
+		head := parts[:rand.Intn(len(parts))]
+		sort.Sort(head) // ensure there's a valid order (which may be different to the original order)
+		headMsg := dynamicpb.NewMessage(md)
+		require.NoError(t, proto.Unmarshal(head.Join(), headMsg))
+	}
 }
