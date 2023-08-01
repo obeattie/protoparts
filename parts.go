@@ -220,7 +220,7 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 		}
 		valueLength := protowire.ConsumeFieldValue(num, typ, pb[typLength:])
 		if valueLength < 0 {
-			return nil, fmt.Errorf("error parsing field value: %w", protowire.ParseError(typLength))
+			return nil, fmt.Errorf("error parsing field value: %w", protowire.ParseError(valueLength))
 		}
 		value := pb[:typLength+valueLength]
 		pb = pb[len(value):]
@@ -242,13 +242,12 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 			Index: idx,
 		})
 
-		// If we have a nested message on our hands, it's encoded recursively as bytes.
+		// If we have a nested message, it's encoded recursively as bytes
 		if typ == protowire.BytesType && fd.Kind() == protoreflect.MessageKind {
-			_, varintLength := protowire.ConsumeVarint(value)
-			if varintLength < 0 {
-				return nil, protowire.ParseError(varintLength)
+			nested, n := protowire.ConsumeBytes(value[typLength:])
+			if n < 0 {
+				return nil, fmt.Errorf("error consuming map bytes: %w", protowire.ParseError(n))
 			}
-			nested := value[typLength+varintLength:]
 			if len(nested) > 0 {
 				children, err := splitPb(nested, fd.Message(), originalMd, path)
 				if err != nil {
@@ -256,11 +255,11 @@ func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Pa
 				}
 				if len(children) > 0 && fd.IsMap() {
 					// Special treatment is needed for maps. Their key/value pairs are encoded as repeated nested
-					// messages, each with two fields (key and value). But, to allow manipulation and addressing of
-					// values by their keys, we want the value to represented as a 'top level' Part, with the key
-					// forming part of the path.
+					// messages, each with two fields (key and value). But, to allow values to be addressed by their
+					// keys, we want the value to be represented as a 'top level' Part, with the key forming part of
+					// the path.
 					//
-					// Thus, we need to manipulate the values' paths: at this point they look like  ….parent.2.…, but
+					// So, we need to manipulate the values' paths: at this point they look like  ….parent.2.…, but
 					// they need to be changed to ….parent[key].…
 					key, values := children[0], children[1:]
 					keyTermIndex, keyTerm := len(prefix), PathTerm{
