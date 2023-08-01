@@ -16,7 +16,7 @@ jobs:
         with:
           go-version: "1.20"
       - name: go env
-        run: 'echo "GOCACHE=$(go env gocache)" >> "$GITHUB_ENV"'
+        run: 'echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_ENV"'
       - name: go test
         run: go test -v ./...
       - name: "fuzz: Split()"
