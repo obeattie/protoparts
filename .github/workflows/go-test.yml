@@ -17,11 +17,11 @@ jobs:
           go-version: "1.20"
       - name: go env
         run: 'echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_ENV"'
-      - name: go test
-        run: go test -v ./...
-      - name: "fuzz: Split()"
-        run: go test -v -test.run FuzzSplit -fuzz FuzzSplit -fuzztime 3m .
       - uses: actions/cache@v2
         with:
           path: ${{ env.GOCACHE }}/fuzz
           key: ${{ runner.os }}-GOCACHE-fuzz
+      - name: go test
+        run: go test -v ./...
+      - name: "fuzz: Split()"
+        run: go test -v -test.run FuzzSplit -fuzz FuzzSplit -fuzztime 3m .
