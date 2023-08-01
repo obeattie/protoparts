@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/dynamicpb"
 
-	ppproto "github.com/obeattie/protoparts/test/proto"
+	"github.com/obeattie/protoparts/testproto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +49,7 @@ func FuzzSplit(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, b []byte) {
-		pb := &ppproto.Person{}
+		pb := &testproto.Person{}
 		if err := proto.Unmarshal(b, pb); err != nil {
 			t.Skip()
 		}

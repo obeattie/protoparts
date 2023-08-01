@@ -12,11 +12,11 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	ppproto "github.com/obeattie/protoparts/test/proto"
+	"github.com/obeattie/protoparts/testproto"
 )
 
 func TestSplitProto(t *testing.T) {
-	md := (&ppproto.Person{}).ProtoReflect().Descriptor()
+	md := (&testproto.Person{}).ProtoReflect().Descriptor()
 	type tc struct {
 		msg           *dynamicpb.Message
 		expectedPaths []Path
@@ -145,12 +145,12 @@ func TestMergeProtoParts(t *testing.T) {
 func TestSplitJoinProto(t *testing.T) {
 	cases := []proto.Message{
 		quickTestMsg(t).Interface(),
-		&ppproto.Article{
+		&testproto.Article{
 			Title:   "Pigeon Appointed New Air Traffic Controller",
 			Content: "Dressed in a tiny reflective vest and perched confidently on a control tower window ledge, the pigeon, affectionately named \"Captain Coocoo,\" took over the reins of air traffic management during a quirky experiment gone slightly awry.",
 			Author:  "Wingston Featherweather",
 			Date:    timestamppb.Now(),
-			Status:  ppproto.Article_PUBLISHED,
+			Status:  testproto.Article_PUBLISHED,
 			Tags:    []string{"#PigeonTrafficControl", "#CooCooAviationAdventure", "#FeatheredFlightControl", "#WingingItInAirTraffic", "#PigeonBossInCharge", "#AvianMayhemAtTheTower", "#CoocooATC", "#FeatherlandiaChaos", "#AviationGonePigeon", "#BirdsOnTheRunway"},
 		},
 	}

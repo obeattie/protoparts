@@ -1,7 +1,0 @@
-panic: runtime error: slice bounds out of range [:2] with capacity 1
-github.com/obeattie/protoparts.Parts.join
-github.com/obeattie/protoparts.Parts.join
-github.com/obeattie/protoparts.Parts.Join
-github.com/obeattie/protoparts/test.Fuzz
-go-fuzz-dep.Main
-main.main

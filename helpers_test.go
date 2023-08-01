@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/obeattie/protoparts/testproto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
-
-	ppproto "github.com/obeattie/protoparts/test/proto"
 )
 
 func s(str string) *string {
@@ -23,7 +22,7 @@ func marshalProto(t testing.TB, msg proto.Message) []byte {
 }
 
 func testMsg(t testing.TB, name, streetAddress, city *string, tags []string, boop [][]byte, kv map[string]string) *dynamicpb.Message {
-	personMd := (&ppproto.Person{}).ProtoReflect().Descriptor()
+	personMd := (&testproto.Person{}).ProtoReflect().Descriptor()
 	person := dynamicpb.NewMessage(personMd)
 	if name != nil {
 		person.Set(personMd.Fields().ByName("name"), protoreflect.ValueOfString(*name))

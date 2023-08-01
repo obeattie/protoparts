@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	ppproto "github.com/obeattie/protoparts/test/proto"
+	"github.com/obeattie/protoparts/testproto"
 )
 
 func TestValueFromMessage(t *testing.T) {
@@ -66,7 +66,7 @@ func TestValueFromMessage(t *testing.T) {
 }
 
 func TestFieldDescriptorInMessage(t *testing.T) {
-	md := (&ppproto.Person{}).ProtoReflect().Descriptor()
+	md := (&testproto.Person{}).ProtoReflect().Descriptor()
 	type tc struct {
 		p  string
 		fd protoreflect.FieldDescriptor
