@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/obeattie/protoparts/testproto"
+	"github.com/obeattie/protoparts/internal/testproto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"

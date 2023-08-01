@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/obeattie/protoparts/testproto"
+	"github.com/obeattie/protoparts/internal/testproto"
 )
 
 func TestValueFromMessage(t *testing.T) {

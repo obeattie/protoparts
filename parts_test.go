@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/obeattie/protoparts/testproto"
+	"github.com/obeattie/protoparts/internal/testproto"
 )
 
 func TestSplitProto(t *testing.T) {

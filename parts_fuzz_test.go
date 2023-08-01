@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/dynamicpb"
 
-	"github.com/obeattie/protoparts/testproto"
+	"github.com/obeattie/protoparts/internal/testproto"
 	"github.com/stretchr/testify/assert"
 )
 

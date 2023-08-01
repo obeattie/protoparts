@@ -9,7 +9,7 @@ syntax = "proto3";
 
 package testproto;
 
-option go_package = "github.com/obeattie/protoparts/testproto;testproto";
+option go_package = "github.com/obeattie/protoparts/internal/testproto;testproto";
 
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
