@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// FuzzSplit works off the basic premise that if a message is considered valid by the Protobuf library, then Split()
+// should be able to handle it. If that's ever not the case, then the test fails.
 func FuzzSplit(f *testing.F) {
 	msgs := []*dynamicpb.Message{
 		testMsg(f, nil, nil, nil, nil, nil, nil),
