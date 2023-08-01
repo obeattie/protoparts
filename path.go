@@ -298,11 +298,11 @@ func (p Path) HasPrefix(prefix Path) bool {
 		prefixterm, term := prefix[i], p[i]
 		if prefixterm.Index == -1 {
 			// If the last item of the prefix doesn't specify an index, it doesn't matter whether the last element of the
-			// path does. Or in other words: 1.2 is a prefix of 1.2[3], but 1.2[1] is not a prefix of 1.2[3]
+			// path does. Or in other words: 1/2 is a prefix of 1/2[3], but 1/2[1] is not a prefix of 1/2[3]
 			term.Index = -1
 		}
 		if prefixterm.Key == nil {
-			// Similar logic for the key. 1.2 is a prefix of 1.2[0x0a], but 1.2[0x0a] is not a prefix of 1.2[0x0b]
+			// Similar logic for the key. 1/2 is a prefix of 1/2[0x0a], but 1/2[0x0a] is not a prefix of 1/2[0x0b]
 			term.Key = nil
 		}
 		if !prefixterm.Equal(term) {
@@ -312,7 +312,7 @@ func (p Path) HasPrefix(prefix Path) bool {
 	return true
 }
 
-// Parent returns a Path with the last element of this one removed. Eg: 1.2.3 -> 1.2
+// Parent returns a Path with the last element of this one removed. Eg: 1/2/3 -> 1/2
 func (p Path) Parent() Path {
 	if len(p) == 0 {
 		return p
@@ -320,7 +320,7 @@ func (p Path) Parent() Path {
 	return p[:len(p)-1]
 }
 
-// Last returns the last element of the path. Eg: 1.2.3 -> 3. If the path is empty, this will panic.
+// Last returns the last element of the path. Eg: 1/2/3 -> 3. If the path is empty, this will panic.
 func (p Path) Last() PathTerm {
 	return p[len(p)-1]
 }
