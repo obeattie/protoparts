@@ -23,5 +23,5 @@ jobs:
         run: go test -v -test.run FuzzSplit -fuzz FuzzSplit -fuzztime 3m .
       - uses: actions/cache@v2
         with:
-          path: ${{ env.GOCACHE }}
-          key: ${{ runner.os }}-GOCACHE-${{ hashFiles('go.sum') }}-${{ hashFiles('src/**') }}
+          path: ${{ env.GOCACHE }}/fuzz
+          key: ${{ runner.os }}-GOCACHE-fuzz
