@@ -123,7 +123,7 @@ func TestMergeProtoParts(t *testing.T) {
 			before, mutation, expected := c[0], c[1], c[2]
 			beforeParts, mutationParts := split(t, before), split(t, mutation)
 			expectedB := marshalProto(t, expected)
-			afterParts := MergeProtoParts(beforeParts, mutationParts)
+			afterParts := Merge(beforeParts, mutationParts)
 			after := afterParts.ProtoMessage()
 			require.NotNil(t, after)
 			afterB := marshalProto(t, after.Interface())

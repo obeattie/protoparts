@@ -21,8 +21,8 @@ import (
 // produced by Split.
 type Parts []Part
 
-// MergeProtoParts merges p1 and p2, with items in p2 taking precedence over p1. The resulting Parts are sorted.
-func MergeProtoParts(p1, p2 Parts) Parts {
+// Merge merges p1 and p2, with items in p2 taking precedence over p1. The resulting Parts are sorted.
+func Merge(p1, p2 Parts) Parts {
 	// Make a copy of p1, into which we will merge p2
 	v := make(Parts, len(p1))
 	copy(v, p1)
