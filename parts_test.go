@@ -218,3 +218,19 @@ func TestProjection(t *testing.T) {
 		require.NoError(t, proto.Unmarshal(head.Join(), headMsg))
 	}
 }
+
+// TestRearrange asserts that we can manipulate the Paths of Parts, and when they are joined get a message that's
+// identical to what we get if we construct a protobuf in the target state directly.
+func TestRearrange(t *testing.T) {
+	msg := &testproto.Address{
+		StreetAddress: "foobar",
+	}
+	parts, err := Marshal(msg)
+	require.NoError(t, err)
+	parts[0].Path[0].Tag = 2 // this changes the "foobar" to be in the city field, not the street address field
+
+	expected := marshalProto(t, &testproto.Address{
+		City: "foobar",
+	})
+	assert.Equal(t, expected, parts.Join())
+}

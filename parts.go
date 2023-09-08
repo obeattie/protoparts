@@ -170,6 +170,16 @@ func (ps Parts) join(prefixLen int) []byte {
 		part := parts[0]
 		bb := part.Bytes
 
+		// If the field number being output is now different to what is inside the serialized tag, we need to
+		// change the tag
+		if lastTerm := part.Path.Last(); lastTerm.Key == nil { // doesn't apply to map values
+			num, typ, typLength := protowire.ConsumeTag(bb)
+			if num != part.Path.Last().Tag {
+				tag := protowire.AppendTag(nil, lastTerm.Tag, typ)
+				bb = append(tag, bb[typLength:]...)
+			}
+		}
+
 		// Extract all descendants of the prefix to serialise together
 		prefix, run := part.Path[:prefixLen+1], parts
 		for ii, candidate := range run[1:] {
