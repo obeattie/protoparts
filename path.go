@@ -343,3 +343,8 @@ func (p Path) Compare(q Path) int {
 	}
 	return 0 // paths are equal
 }
+
+// Append returns a new path with the given Path appended to this one.
+func (p Path) Append(y Path) Path {
+	return append(append(make(Path, 0, len(p)+len(y)), p...), y...)
+}

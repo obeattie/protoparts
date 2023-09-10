@@ -2,6 +2,7 @@ package protoparts
 
 import (
 	"math/rand"
+	"slices"
 	"testing"
 
 	"github.com/obeattie/protoparts/internal/testproto"
@@ -95,4 +96,14 @@ func TestPathHasPrefix(t *testing.T) {
 			assert.False(t, p.HasPrefix(nil), "(%v).HasPrefix(nil) should return false", c.p)
 		})
 	}
+}
+
+func TestPathAppend(t *testing.T) {
+	// Check that Append() is not susceptible to overwriting other arrays à la https://go.dev/play/p/ZgbQkw0lF5S
+	a := slices.Grow(DecodePath("1/2/3"), 10)
+	b := a.Append(DecodePath("4"))
+	c := a.Append(DecodePath("40"))
+	assert.Equal(t, DecodePath("1/2/3"), a)
+	assert.Equal(t, DecodePath("1/2/3/4"), b)
+	assert.Equal(t, DecodePath("1/2/3/40"), c)
 }
