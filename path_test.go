@@ -106,4 +106,9 @@ func TestPathAppend(t *testing.T) {
 	assert.Equal(t, DecodePath("1/2/3"), a)
 	assert.Equal(t, DecodePath("1/2/3/4"), b)
 	assert.Equal(t, DecodePath("1/2/3/40"), c)
+
+	// Nil handling
+	assert.Equal(t, DecodePath("1/2/3"), DecodePath("1/2/3").Append(nil))
+	assert.Equal(t, DecodePath("1/2/3"), Path(nil).Append(DecodePath("1/2/3")))
+	assert.Nil(t, Path(nil).Append(nil))
 }

@@ -346,5 +346,8 @@ func (p Path) Compare(q Path) int {
 
 // Append returns a new path with the given Path appended to this one.
 func (p Path) Append(y Path) Path {
+	if p == nil && y == nil {
+		return nil
+	}
 	return append(append(make(Path, 0, len(p)+len(y)), p...), y...)
 }
