@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"fmt"
 
+	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // A Part represents a field within a binary Protocol Buffer message.
 type Part struct {
-	Path  Path
-	Bytes []byte
+	Path Path
+	Type protowire.Type
+	// KeyType contains the wire type of the key, if this Part represents an entry within a map. -1 if not.
+	KeyType protowire.Type
+	Bytes   []byte
 	// Md contains the message descriptor that the Path can be found in
 	Md protoreflect.MessageDescriptor
 }

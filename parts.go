@@ -1,10 +1,6 @@
 package protoparts
 
 import (
-	"fmt"
-	"sort"
-
-	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
@@ -20,29 +16,6 @@ import (
 // field order, so it is unnecessary to sort if the order is known to be good – for example if the Parts were
 // produced by Split.
 type Parts []Part
-
-// Merge merges p1 and p2, with items in p2 taking precedence over p1. The resulting Parts are sorted.
-func Merge(p1, p2 Parts) Parts {
-	// Make a copy of p1, into which we will merge p2
-	v := make(Parts, len(p1))
-	copy(v, p1)
-	for _, part := range p2 {
-		// Remove any existing part from v which is prefixed with the new part's path. Preserving order is
-		// unimportant as we will sort below.
-		indicesToRemove := v.selectIndices(part.Path)
-		for ii := len(indicesToRemove) - 1; ii >= 0; ii-- {
-			i := indicesToRemove[ii]
-			v[i] = v[len(v)-1] // https://github.com/golang/go/wiki/SliceTricks#delete-without-preserving-order
-			v[len(v)-1] = Part{}
-			v = v[:len(v)-1]
-		}
-		// Add the new part to the end
-		v = append(v, part)
-	}
-	// The new list may now have a completely nonsensical ordering, so sort
-	sort.Sort(v)
-	return v
-}
 
 // Paths returns all the contained field Paths
 func (ps Parts) Paths() []Path {
@@ -150,161 +123,9 @@ func (ps Parts) Exclude(prefixes ...Path) Parts {
 // Warning: If the order of fields is not valid, Join() may produce malformed output which cannot be parsed as a
 // Protocol Buffer. If the order of parts is not known to be valid, sort them first.
 func (ps Parts) Join() []byte {
-	return ps.join(0)
-}
-
-func (ps Parts) join(prefixLen int) []byte {
-	b := bufferPool.Get()
-	defer bufferPool.Put(b)
-
-	// wrapNested wraps the passed buffer with the tag + length prefix needed to denote that it's a nested message
-	wrapNested := func(bb []byte, tag protowire.Number) []byte {
-		envelope := make([]byte, 0, protowire.SizeTag(tag)+protowire.SizeBytes(len(bb)))
-		envelope = protowire.AppendTag(envelope, tag, protowire.BytesType)
-		envelope = protowire.AppendVarint(envelope, uint64(len(bb)))
-		return append(envelope, bb...)
-	}
-
-	parts := ps
-	for len(parts) > 0 {
-		part := parts[0]
-		bb := part.Bytes
-
-		// If the field number being output is now different to what is inside the serialized tag, we need to
-		// change the tag
-		if lastTerm := part.Path.Last(); lastTerm.Key == nil { // doesn't apply to map values
-			num, typ, typLength := protowire.ConsumeTag(bb)
-			if num != part.Path.Last().Tag {
-				tag := protowire.AppendTag(nil, lastTerm.Tag, typ)
-				bb = append(tag, bb[typLength:]...)
-			}
-		}
-
-		// Extract all descendants of the prefix to serialise together
-		prefix, run := part.Path[:prefixLen+1], parts
-		for ii, candidate := range run[1:] {
-			if len(candidate.Path) <= len(prefix) || !candidate.Path.HasPrefix(prefix) {
-				run = run[:ii+1] // +1 because the [1:] above means the range indices are off by one
-				break
-			}
-		}
-		if len(run) > 1 {
-			bb = run.join(prefixLen + 1)
-		}
-
-		if part.Path[prefixLen].Key != nil {
-			// We have a map value, so we need to wrap everything in an enclosing entry message with key, value fields
-			key := part.Path[prefixLen].Key
-			if len(part.Path) > prefixLen+1 {
-				// If the value is itself a nested message, it needs a tag + length prefix
-				bb = wrapNested(bb, 2)
-			}
-			entry := append(key, bb...)
-			bb = wrapNested(entry, prefix.Last().Tag)
-		} else if len(part.Path) > prefixLen+1 {
-			// We have nested elements, so we need to stick on a tag + length prefix
-			bb = wrapNested(bb, prefix.Last().Tag)
-		}
-
-		b.Write(bb)
-		parts = parts[len(run):]
-	}
-
-	// We need to copy the bytes of the buffer; otherwise they can/will get reused
-	result := make([]byte, b.Len())
-	copy(result, b.Bytes())
-	return result
+	return join(ps, 0)
 }
 
 func (ps Parts) Len() int           { return len(ps) }
 func (ps Parts) Swap(x, y int)      { ps[x], ps[y] = ps[y], ps[x] }
 func (ps Parts) Less(x, y int) bool { return ps[x].Path.Compare(ps[y].Path) == -1 }
-
-func splitPb(pb []byte, md, originalMd protoreflect.MessageDescriptor, prefix Path) (Parts, error) {
-	v := Parts{}
-	indices := map[protowire.Number]int{} // Tracks the last seen index in repeated fields
-	for len(pb) > 0 {
-		num, typ, typLength := protowire.ConsumeTag(pb)
-		if typLength < 0 {
-			return nil, fmt.Errorf("error parsing tag: %w", protowire.ParseError(typLength))
-		}
-		valueLength := protowire.ConsumeFieldValue(num, typ, pb[typLength:])
-		if valueLength < 0 {
-			return nil, fmt.Errorf("error parsing field value: %w", protowire.ParseError(valueLength))
-		}
-		value := pb[:typLength+valueLength]
-		pb = pb[len(value):]
-
-		// Ignore unknown fields
-		fd := md.Fields().ByNumber(num)
-		if fd == nil {
-			continue
-		}
-
-		// Compile the path for the value
-		idx := -1
-		if fd.Cardinality() == protoreflect.Repeated && !fd.IsMap() {
-			idx = indices[num]
-			indices[num]++
-		}
-		path := append(prefix, PathTerm{
-			Tag:   num,
-			Index: idx,
-		})
-
-		// If we have a nested message, it's encoded recursively as bytes
-		if typ == protowire.BytesType && fd.Kind() == protoreflect.MessageKind {
-			nested, n := protowire.ConsumeBytes(value[typLength:])
-			if n < 0 {
-				return nil, fmt.Errorf("error consuming map bytes: %w", protowire.ParseError(n))
-			}
-			if len(nested) > 0 {
-				children, err := splitPb(nested, fd.Message(), originalMd, path)
-				if err != nil {
-					return nil, err
-				}
-				if len(children) > 0 && fd.IsMap() {
-					// Special treatment is needed for maps. Their key/value pairs are encoded as repeated nested
-					// messages, each with two fields (key and value). But, to allow values to be addressed by their
-					// keys, we want the value to be represented as a 'top level' Part, with the key forming part of
-					// the path.
-					//
-					// So, we need to manipulate the values' paths: at this point they look like  ….parent.2.…, but
-					// they need to be changed to ….parent[key].…
-					key, values := children[0], children[1:]
-					keyTermIndex, keyTerm := len(prefix), PathTerm{
-						Tag:   num,
-						Index: idx,
-						Key:   key.Bytes,
-					}
-					for i := range values {
-						// Add the key to the "parent" term
-						p := values[i].Path
-						p[keyTermIndex] = keyTerm
-						// Snip the superfluous field number term (https://github.com/golang/go/wiki/SliceTricks#delete)
-						p = append(p[:keyTermIndex+1], p[keyTermIndex+2:]...)
-						values[i].Path = p
-					}
-					children = values // Toss the key as a dedicated element now it's part of the path of each value
-				}
-				v = append(v, children...)
-				continue
-			}
-		}
-
-		v = append(v, Part{
-			Path:  path,
-			Bytes: value,
-			Md:    originalMd,
-		})
-	}
-
-	return v, nil
-}
-
-// Split explodes a serialised Protocol Buffer into parts of its constituent fields and those within nested
-// messages. The resulting parts are returned in the order they appear in, so recombining the parts (unless they
-// are reordered either manually or by sorting them) yields a byte-wise identical message.
-func Split(pb []byte, md protoreflect.MessageDescriptor) (Parts, error) {
-	return splitPb(pb, md, md, nil)
-}

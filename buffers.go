@@ -17,10 +17,10 @@ type bufferPoolT struct {
 
 func (b bufferPoolT) Get() *bytes.Buffer {
 	buf := b.p.Get().(*bytes.Buffer)
-	buf.Reset()
 	return buf
 }
 
 func (b bufferPoolT) Put(buf *bytes.Buffer) {
+	buf.Reset()
 	b.p.Put(buf)
 }
