@@ -11,7 +11,7 @@ import (
 )
 
 func TestValueFromMessage(t *testing.T) {
-	m := testMsg(t, s("Oliver Beattie"), s("203 Chautauqua Blvd"), nil, nil, nil, nil)
+	m := testMsg(t, p("Oliver Beattie"), p("203 Chautauqua Blvd"), nil, nil, nil, nil)
 	md := m.Descriptor()
 
 	emptyMap := m.NewField(md.Fields().ByName("map_string_string")).Map()

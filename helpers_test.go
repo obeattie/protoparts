@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-func s(str string) *string {
-	return &str
+func p[T any](v T) *T {
+	return &v
 }
 
 func marshalProto(t testing.TB, msg proto.Message) []byte {
@@ -64,9 +64,9 @@ func testMsg(t testing.TB, name, streetAddress, city *string, tags []string, boo
 
 func quickTestMsg(t testing.TB) *dynamicpb.Message {
 	person := testMsg(t,
-		s("Ryan Gosling"),
-		s("3532 Hayden Ave"),
-		s("Culver City"),
+		p("Ryan Gosling"),
+		p("3532 Hayden Ave"),
+		p("Culver City"),
 		[]string{
 			"The Driver",
 			"Sebastian Wilder",
@@ -122,9 +122,9 @@ func quickTestMsg(t testing.TB) *dynamicpb.Message {
 // are using a common baseline)
 func benchmarkMsg(t testing.TB) *dynamicpb.Message {
 	return testMsg(t,
-		s("Sirius Black"),
-		s("12 Grimmauld Place"),
-		s("London"),
+		p("Sirius Black"),
+		p("12 Grimmauld Place"),
+		p("London"),
 		[]string{"confringo"},
 		nil,
 		map[string]string{

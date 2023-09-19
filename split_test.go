@@ -25,13 +25,13 @@ func TestSplit(t *testing.T) {
 		},
 		{
 			// Simple, one field populated
-			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
+			testMsg(t, p("Oliver Beattie"), nil, nil, nil, nil, nil),
 			[]Path{
 				DecodeSymbolicPath("name", md)},
 		},
 		{
 			// An optional field with empty contents is still present
-			testMsg(t, s(""), nil, nil, nil, nil, nil),
+			testMsg(t, p(""), nil, nil, nil, nil, nil),
 			[]Path{
 				DecodeSymbolicPath("name", md)},
 		},

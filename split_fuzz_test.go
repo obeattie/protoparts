@@ -18,13 +18,13 @@ import (
 func FuzzSplit(f *testing.F) {
 	msgs := []*dynamicpb.Message{
 		testMsg(f, nil, nil, nil, nil, nil, nil),
-		testMsg(f, s(""), nil, nil, nil, nil, nil),
-		testMsg(f, s("Oliver Beattie"), nil, nil, nil, nil, nil),
-		testMsg(f, s("Lindy Bishop"), nil, nil, nil, nil, nil),
+		testMsg(f, p(""), nil, nil, nil, nil, nil),
+		testMsg(f, p("Oliver Beattie"), nil, nil, nil, nil, nil),
+		testMsg(f, p("Lindy Bishop"), nil, nil, nil, nil, nil),
 		testMsg(f,
-			s("Ryan Gosling"),
-			s("3532 Hayden Ave"),
-			s("Culver City"),
+			p("Ryan Gosling"),
+			p("3532 Hayden Ave"),
+			p("Culver City"),
 			[]string{"The Driver", "Sebastian Wilder", ""},
 			[][]byte{[]byte("🕺"), []byte("🏍")},
 			map[string]string{
@@ -34,9 +34,9 @@ func FuzzSplit(f *testing.F) {
 				"k4": "v4",
 			}),
 		testMsg(f,
-			s("Ryan Gosling"),
-			s("3532 Hayden Ave"),
-			s("Culver City"),
+			p("Ryan Gosling"),
+			p("3532 Hayden Ave"),
+			p("Culver City"),
 			[]string{"The Driver", "Sebastian Wilder"},
 			[][]byte{[]byte("🕺"), []byte("🏍")},
 			map[string]string{

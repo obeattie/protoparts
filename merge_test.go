@@ -14,29 +14,29 @@ func TestMerge(t *testing.T) {
 	tc := [][3]*dynamicpb.Message{
 		{
 			// 0: Top-level no-op
-			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
+			testMsg(t, p("Oliver Beattie"), nil, nil, nil, nil, nil),
 			testMsg(t, nil, nil, nil, nil, nil, nil),
-			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil)},
+			testMsg(t, p("Oliver Beattie"), nil, nil, nil, nil, nil)},
 		{
 			// 1: Top-level field replacement
-			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
-			testMsg(t, s("Lindy Bishop"), nil, nil, nil, nil, nil),
-			testMsg(t, s("Lindy Bishop"), nil, nil, nil, nil, nil)},
+			testMsg(t, p("Oliver Beattie"), nil, nil, nil, nil, nil),
+			testMsg(t, p("Lindy Bishop"), nil, nil, nil, nil, nil),
+			testMsg(t, p("Lindy Bishop"), nil, nil, nil, nil, nil)},
 		{
 			// 2: Top-level field zeroing, with a field that has explicit presence
-			testMsg(t, s("Oliver Beattie"), nil, nil, nil, nil, nil),
-			testMsg(t, s(""), nil, nil, nil, nil, nil),
-			testMsg(t, s(""), nil, nil, nil, nil, nil)},
+			testMsg(t, p("Oliver Beattie"), nil, nil, nil, nil, nil),
+			testMsg(t, p(""), nil, nil, nil, nil, nil),
+			testMsg(t, p(""), nil, nil, nil, nil, nil)},
 		{
 			// 3: Nested field replacement
-			testMsg(t, nil, nil, s("London"), nil, nil, nil),
-			testMsg(t, nil, nil, s("Los Angeles"), nil, nil, nil),
-			testMsg(t, nil, nil, s("Los Angeles"), nil, nil, nil)},
+			testMsg(t, nil, nil, p("London"), nil, nil, nil),
+			testMsg(t, nil, nil, p("Los Angeles"), nil, nil, nil),
+			testMsg(t, nil, nil, p("Los Angeles"), nil, nil, nil)},
 		{
 			// 4: Nested no-op
-			testMsg(t, nil, nil, s("London"), nil, nil, nil),
+			testMsg(t, nil, nil, p("London"), nil, nil, nil),
 			testMsg(t, nil, nil, nil, nil, nil, nil),
-			testMsg(t, nil, nil, s("London"), nil, nil, nil)},
+			testMsg(t, nil, nil, p("London"), nil, nil, nil)},
 		{
 			// 5: List no-op
 			testMsg(t, nil, nil, nil, []string{"a"}, nil, nil),
