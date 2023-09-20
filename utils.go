@@ -1,6 +1,9 @@
 package protoparts
 
 import (
+	"fmt"
+
+	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
@@ -66,8 +69,12 @@ func valueFromMessage(m protoreflect.Message, p Path) (protoreflect.Value, bool)
 			if !fd.IsMap() {
 				return protoreflect.Value{}, false // not a map; path is incorrect
 			}
+			// Decode the key using the message descriptor of an entry within the map
 			entry := dynamicpb.NewMessage(fd.Message())
-			if err := proto.Unmarshal(term.Key, entry); err != nil {
+			keyPb := make([]byte, 0, protowire.SizeTag(2)+len(term.Key))
+			keyPb = protowire.AppendTag(keyPb, 1, wireType(fd.MapKey().Kind()))
+			keyPb = append(keyPb, term.Key...)
+			if err := proto.Unmarshal(keyPb, entry); err != nil {
 				return protoreflect.Value{}, false // invalid key
 			}
 			v = v.Map().Get(entry.Get(fd.MapKey()).MapKey())
@@ -75,4 +82,26 @@ func valueFromMessage(m protoreflect.Message, p Path) (protoreflect.Value, bool)
 		}
 	}
 	return v, has
+}
+
+// wireType returns the protobuf wire type for the given field kind
+// See: https://protobuf.dev/programming-guides/encoding/#structure
+func wireType(kind protoreflect.Kind) protowire.Type {
+	// groups (which are deprecated) are deliberately excluded
+	switch kind {
+	case protoreflect.Int32Kind, protoreflect.Int64Kind,
+		protoreflect.Uint32Kind, protoreflect.Uint64Kind,
+		protoreflect.Sint32Kind, protoreflect.Sint64Kind,
+		protoreflect.BoolKind,
+		protoreflect.EnumKind:
+		return protowire.VarintType
+	case protoreflect.Fixed64Kind, protoreflect.Sfixed64Kind, protoreflect.DoubleKind:
+		return protowire.Fixed64Type
+	case protoreflect.StringKind, protoreflect.BytesKind, protoreflect.MessageKind:
+		return protowire.BytesType
+	case protoreflect.Fixed32Kind, protoreflect.Sfixed32Kind, protoreflect.FloatKind:
+		return protowire.Fixed32Type
+	default:
+		panic(fmt.Errorf("unhanded kind %v", kind))
+	}
 }

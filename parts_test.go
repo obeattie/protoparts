@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
 
 	"github.com/obeattie/protoparts/internal/testproto"
@@ -50,6 +51,52 @@ func TestRearrange(t *testing.T) {
 		City: "foobar",
 	})
 	assert.Equal(t, expected, parts.Join())
+}
+
+func TestProtoValue(t *testing.T) {
+	msg := &testproto.Person{
+		Name: p("Ryan Gosling"),
+		Address: &testproto.Address{
+			StreetAddress: "3532 Hayden Ave",
+			City:          "Culver City",
+		},
+		Boop:          [][]byte{[]byte("bop"), []byte("beat")},
+		MaritalStatus: testproto.Person_MARRIED,
+		MapStringString: map[string]string{
+			"a": "b",
+		},
+		MapStringLatlng: map[string]*testproto.LatLng{
+			"london": {
+				Latitude:  51.508125,
+				Longitude: -0.128081,
+			},
+			"berlin": {
+				Latitude:  52.511100,
+				Longitude: 13.442989,
+			},
+		},
+	}
+	parts := split(t, msg.ProtoReflect())
+	expectations := map[string]any{
+		"name":                      "Ryan Gosling",
+		"address/street_address":    "3532 Hayden Ave",
+		"map_string_string[0x0161]": "b",
+		"map_string_latlng[0x066c6f6e646f6e]/latitude":  51.508125,
+		"map_string_latlng[0x066c6f6e646f6e]/longitude": -0.128081,
+		"map_string_latlng[0x066265726c696e]/latitude":  52.511100,
+		"map_string_latlng[0x066265726c696e]/longitude": 13.442989,
+		"marital_status": protoreflect.EnumNumber(4),
+		"boop[0]":        []byte("bop"),
+		"boop[1]":        []byte("beat"),
+	}
+
+	for symbolicPath, expectedVal := range expectations {
+		path := DecodeSymbolicPath(symbolicPath, msg.ProtoReflect().Descriptor())
+		v, ok := parts.ProtoValue(path)
+		if assert.True(t, ok) {
+			assert.Equal(t, expectedVal, v.Interface())
+		}
+	}
 }
 
 func BenchmarkSort(b *testing.B) {

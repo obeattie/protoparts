@@ -213,7 +213,11 @@ func DecodeSymbolicPath(s string, md protoreflect.MessageDescriptor) Path {
 		if t.Tag == 0 {
 			return nil // invalid path term
 		}
-		md = md.Fields().ByNumber(t.Tag).Message()
+		if fd := md.Fields().ByNumber(t.Tag); fd.IsMap() {
+			md = fd.MapValue().Message()
+		} else {
+			md = fd.Message()
+		}
 		v[i] = t
 	}
 	return v

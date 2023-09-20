@@ -20,6 +20,7 @@ message LatLng {
          SINGLE = 1;
          DIVORCED = 2;
          WIDOWED = 3;
+         MARRIED = 4;
      }
 
      optional string name = 1;
