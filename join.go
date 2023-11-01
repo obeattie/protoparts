@@ -36,7 +36,7 @@ func join(ps Parts, prefixLen int) []byte {
 		bb := part.Bytes
 		if len(run) > 1 {
 			bb = join(run, prefixLen+1)
-		} else if len(run) > 1 || isNestedMsg || !isMapVal {
+		} else if isNestedMsg || !isMapVal {
 			// Prepend field tag
 			c := protowire.AppendTag(nil, part.Path.Last().Tag, part.Type)
 			bb = append(c, bb...)
