@@ -59,6 +59,10 @@ func TestProtoValue(t *testing.T) {
 		Address: &testproto.Address{
 			StreetAddress: "3532 Hayden Ave",
 			City:          "Culver City",
+			LatLng: &testproto.LatLng{
+				Latitude:  34.025657001906474,
+				Longitude: -118.38056197650265,
+			},
 		},
 		Boop:          [][]byte{[]byte("bop"), []byte("beat")},
 		MaritalStatus: testproto.Person_MARRIED,
@@ -78,16 +82,18 @@ func TestProtoValue(t *testing.T) {
 	}
 	parts := split(t, msg.ProtoReflect())
 	expectations := map[string]any{
-		"name":                      "Ryan Gosling",
-		"address/street_address":    "3532 Hayden Ave",
-		"map_string_string[0x0161]": "b",
+		"name":                                          "Ryan Gosling",
+		"address/street_address":                        "3532 Hayden Ave",
+		"address/lat_lng/latitude":                      34.025657001906474,
+		"address/lat_lng/longitude":                     -118.38056197650265,
+		"map_string_string[0x0161]":                     "b",
 		"map_string_latlng[0x066c6f6e646f6e]/latitude":  51.508125,
 		"map_string_latlng[0x066c6f6e646f6e]/longitude": -0.128081,
 		"map_string_latlng[0x066265726c696e]/latitude":  52.511100,
 		"map_string_latlng[0x066265726c696e]/longitude": 13.442989,
-		"marital_status": protoreflect.EnumNumber(4),
-		"boop[0]":        []byte("bop"),
-		"boop[1]":        []byte("beat"),
+		"marital_status":                                protoreflect.EnumNumber(4),
+		"boop[0]":                                       []byte("bop"),
+		"boop[1]":                                       []byte("beat"),
 	}
 
 	for symbolicPath, expectedVal := range expectations {

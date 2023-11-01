@@ -14,7 +14,8 @@ type Part struct {
 	Type protowire.Type
 	// KeyType contains the wire type of the key, if this Part represents an entry within a map. -1 if not.
 	KeyType protowire.Type
-	Bytes   []byte
+	// Bytes contains the Protobuf-encoded field value
+	Bytes []byte
 	// Md contains the message descriptor that the Path can be found in
 	Md protoreflect.MessageDescriptor
 }
@@ -32,4 +33,9 @@ func (p Part) Equal(p2 Part) bool {
 	return p.Path.Equal(p2.Path) &&
 		bytes.Equal(p.Bytes, p2.Bytes) &&
 		p.Md.FullName() == p2.Md.FullName()
+}
+
+// Encode adds the necessary prefix to Bytes to make a valid Protocol Buffer for just this field.
+func (p Part) Encode() []byte {
+	return Parts{p}.Join()
 }
