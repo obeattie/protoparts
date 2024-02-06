@@ -1,6 +1,6 @@
 module github.com/obeattie/protoparts
 
-go 1.21.6
+go 1.21.7
 
 require (
 	github.com/stretchr/testify v1.8.4
