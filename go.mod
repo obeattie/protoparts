@@ -3,7 +3,7 @@ module github.com/obeattie/protoparts
 go 1.22.0
 
 require (
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.32.0
 )
 
