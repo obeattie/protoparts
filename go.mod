@@ -2,7 +2,7 @@ module github.com/obeattie/protoparts
 
 go 1.23
 
-toolchain go1.26.1
+toolchain go1.26.2
 
 require (
 	github.com/stretchr/testify v1.11.1
